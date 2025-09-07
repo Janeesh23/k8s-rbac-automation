@@ -1,0 +1,67 @@
+
+- name: "Create token Secret for SA {{ service_account }}"
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ service_account }}-token"
+        namespace: "{{ namespace }}"
+        annotations:
+          kubernetes.io/service-account.name: "{{ service_account }}"
+      type: kubernetes.io/service-account-token
+
+
+- name: "Get Secret {{ service_account }}-token"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    namespace: "{{ namespace }}"
+    name: "{{ service_account }}-token"
+  register: sa_secret
+
+
+- name: "Extract SA token"
+  set_fact:
+    sa_token: "{{ sa_secret.resources[0].data.token | b64decode }}"
+
+
+- name: "Read kubeconfig"
+  slurp:
+    src: "~/.kube/config"
+  register: kubeconfig_file
+
+
+- name: "Parse kubeconfig"
+  set_fact:
+    kubeconfig_parsed: "{{ kubeconfig_file.content | b64decode | from_yaml }}"
+
+
+- name: "Map clusters by name"
+  set_fact:
+    clusters_by_name: "{{ kubeconfig_parsed.clusters | items2dict(key_name='name', value_name='cluster') }}"
+
+
+- name: "Extract API server for {{ cluster_name }}"
+  set_fact:
+    api_server: "{{ clusters_by_name[cluster_name].server }}"
+
+
+- name: "Set CA cert from inline data"
+  set_fact:
+    ca_data: "{{ clusters_by_name[cluster_name]['certificate-authority-data'] }}"
+  when: "'certificate-authority-data' in clusters_by_name[cluster_name]"
+
+
+- name: "Read CA cert file"
+  slurp:
+    src: "{{ clusters_by_name[cluster_name]['certificate-authority'] }}"
+  register: ca_file
+  when: "'certificate-authority' in clusters_by_name[cluster_name]"
+
+- name: "Set CA cert from file"
+  set_fact:
+    ca_data: "{{ ca_file.content }}"
+  when: "'certificate-authority' in clusters_by_name[cluster_name]"
+

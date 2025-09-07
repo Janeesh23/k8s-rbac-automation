@@ -1,0 +1,35 @@
+username: "janeesh"
+service_account: "janeesh-sa" 
+namespace: "dev"
+
+# -------------------------
+# Role Binding Mode
+# -------------------------
+# Options:
+#   clusterrole_existing    bind to an existing ClusterRole (admin, view, etc.)
+#   clusterrole_new         create a new ClusterRole, then bind
+#   role_existing           bind to an existing namespace Role
+#   role_new                create a new Role in namespace, then bind
+
+binding_type:  "role_new"
+role_to_bind: "dev-ops"
+cluster_name: ""
+
+custom_role:
+  name: "dev-ops"
+  rules:
+    - apiGroups: [""]
+      resources: ["pods", "services"]
+      verbs: ["get", "list"]
+
+s3_bucket: "kubeconfig-bucket-12345"
+s3_prefix: "configs/"
+
+
+
+user_email: ""
+
+smtp_host: "smtp.gmail.com"
+smtp_port: 587
+smtp_user: ""
+smtp_password: "{{ vault_smtp_password }}"

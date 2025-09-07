@@ -1,0 +1,16 @@
+---
+- name: "Send kubeconfig URL"
+  community.general.mail:
+    host: "{{ smtp_host }}"
+    port: "{{ smtp_port }}"
+    username: "{{ smtp_user }}"
+    password: "{{ smtp_password | trim }}"
+    to: "{{ user_email }}"
+    from: "{{ smtp_user }}"
+    subject: "Your Kubernetes kubeconfig access"
+    body: |
+      Hi {{ username }},
+      Your Kubernetes kubeconfig file has been created.
+      You can download it from the following secure URL (valid for 12 hours):
+      {{ kubeconfig_url }}
+    secure: starttls

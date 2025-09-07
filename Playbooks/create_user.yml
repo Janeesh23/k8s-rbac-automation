@@ -1,0 +1,12 @@
+---
+- name: Onboard Kubernetes User
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars_files:
+    - ../user_onboarding/vars/user.yml
+    - ../group_vars/all/vault.yml
+
+  roles:
+    - role: user_onboarding

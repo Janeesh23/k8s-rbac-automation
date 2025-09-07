@@ -1,0 +1,43 @@
+---
+- name: Revoke Kubernetes User
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars_files:
+    - ../user_onboarding/vars/user.yml
+
+  tasks:
+    - name: Delete RoleBinding (namespace)
+      kubernetes.core.k8s:
+        state: absent
+        api_version: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        name: "{{ service_account }}-{{ role_to_bind }}-binding"
+        namespace: "{{ namespace }}"
+      when: binding_type in ["role_existing", "role_new"]
+
+    - name: Delete ClusterRoleBinding (cluster-wide)
+      kubernetes.core.k8s:
+        state: absent
+        api_version: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        name: "{{ service_account }}-{{ role_to_bind }}-binding"
+      when: binding_type in ["clusterrole_existing", "clusterrole_new"]
+
+    - name: Delete ServiceAccount
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: ServiceAccount
+        name: "{{ service_account }}"
+        namespace: "{{ namespace }}"
+
+    - name: Delete token Secret
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Secret
+        name: "{{ service_account }}-token"
+        namespace: "{{ namespace }}"
+

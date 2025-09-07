@@ -1,0 +1,13 @@
+---
+- name: Debug user vars
+  debug:
+    msg: "Onboarding user: {{ username }} (SA: {{ service_account }}, NS: {{ namespace }})"
+
+- include_tasks: create_sa.yml
+- include_tasks: create_role_or_clusterrole.yml
+- include_tasks: bind_role.yml
+- include_tasks: generate_token.yml
+- include_tasks: build_kubeconfig.yml
+- include_tasks: upload_s3.yml
+- include_tasks: notify_user.yml 
+

@@ -1,0 +1,26 @@
+---
+
+- name: "Create ClusterRole {{ custom_role.name }} (if binding_type == clusterrole_new)"
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      metadata:
+        name: "{{ custom_role.name }}"
+      rules: "{{ custom_role.rules }}"
+  when: binding_type == "clusterrole_new" and custom_role.name != ""
+
+
+- name: "Create Role {{ custom_role.name }} in namespace {{ namespace }} (if binding_type == role_new)"
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: "{{ custom_role.name }}"
+        namespace: "{{ namespace }}"
+      rules: "{{ custom_role.rules }}"
+  when: binding_type == "role_new" and custom_role.name != ""
+
